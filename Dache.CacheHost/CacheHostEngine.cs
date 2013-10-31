@@ -22,7 +22,7 @@ namespace Dache.CacheHost
         /// <param name="memCache">The mem cache to use for storing objects.</param>
         /// <param name="clientToCacheServiceHost">The client to cache service host.</param>
         /// <param name="cacheManagerClient">The cache manager client.</param>
-        public CacheHostEngine(IRunnable cacheHostInformationPoller, MemCache memCache, ServiceHost clientToCacheServiceHost)
+        public CacheHostEngine(IRunnable cacheHostInformationPoller, IMemCache memCache, ServiceHost clientToCacheServiceHost)
         {
             // Sanitize
             if (cacheHostInformationPoller == null)

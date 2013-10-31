@@ -7,10 +7,17 @@ using Dache.CacheHost.Performance;
 
 namespace Dache.CacheHost.Storage
 {
+    public interface IMemCache : IDisposable
+    {
+        void Add(string key, byte[] value, CacheItemPolicy cacheItemPolicy);
+        byte[] Get(string key);
+        byte[] Remove(string key);
+        long GetCount();
+    }
     /// <summary>
     /// Encapsulates a memory cache that can store byte arrays. This type is thread safe.
     /// </summary>
-    public class MemCache : IDisposable
+    public class MemCache : IMemCache
     {
         // The underlying memory cache
         private readonly MemoryCache _memoryCache = null;
@@ -42,6 +49,8 @@ namespace Dache.CacheHost.Storage
         /// <param name="key">The key of the byte array. Null is not supported.</param>
         /// <param name="value">The byte array. Null is not supported.</param>
         /// <param name="cacheItemPolicy">The cache item policy.</param>
+        [AddsPerSecond]
+        [TotalRequestsPerSecond]
         public void Add(string key, byte[] value, CacheItemPolicy cacheItemPolicy)
         {
             // Sanitize
@@ -83,10 +92,6 @@ namespace Dache.CacheHost.Storage
                 _memoryCache[hashKey] = value;
             }
 
-            // Increment the Add counter
-            CustomPerformanceCounterManagerContainer.Instance.AddsPerSecond.RawValue++;
-            // Increment the Total counter
-            CustomPerformanceCounterManagerContainer.Instance.TotalRequestsPerSecond.RawValue++;
         }
 
         /// <summary>
@@ -94,6 +99,8 @@ namespace Dache.CacheHost.Storage
         /// </summary>
         /// <param name="key">The key of the byte array.</param>
         /// <returns>The byte array if found, otherwise null.</returns>
+        [GetsPerSecond]
+        [TotalRequestsPerSecond]
         public byte[] Get(string key)
         {
             // Sanitize
@@ -101,11 +108,6 @@ namespace Dache.CacheHost.Storage
             {
                 return null;
             }
-
-            // Increment the Get counter
-            CustomPerformanceCounterManagerContainer.Instance.GetsPerSecond.RawValue++;
-            // Increment the Total counter
-            CustomPerformanceCounterManagerContainer.Instance.TotalRequestsPerSecond.RawValue++;
 
             string hashKey = null;
             _internDictionaryLock.EnterReadLock();
@@ -130,6 +132,8 @@ namespace Dache.CacheHost.Storage
         /// </summary>
         /// <param name="key">The key of the byte array.</param>
         /// <returns>The byte array if the key was found in the cache, otherwise null.</returns>
+        [RemovePerSecond]
+        [TotalRequestsPerSecond]
         public byte[] Remove(string key)
         {
             // Sanitize
@@ -164,11 +168,6 @@ namespace Dache.CacheHost.Storage
             {
                 _internDictionaryLock.ExitUpgradeableReadLock();
             }
-
-            // Increment the Remove counter
-            CustomPerformanceCounterManagerContainer.Instance.RemovesPerSecond.RawValue++;
-            // Increment the Total counter
-            CustomPerformanceCounterManagerContainer.Instance.TotalRequestsPerSecond.RawValue++;
 
             return _memoryCache.Remove(key) as byte[];
         }

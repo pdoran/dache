@@ -8,12 +8,12 @@ namespace Dache.CacheHost.Storage
     public static class MemCacheContainer
     {
         // The instance
-        private static MemCache _instance = null;
+        private static IMemCache _instance = null;
 
         /// <summary>
         /// The mem cache instance.
         /// </summary>
-        public static MemCache Instance
+        public static IMemCache Instance
         {
             get
             {

@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio Express 2012 for Web
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dache.CacheHost", "Dache.CacheHost\Dache.CacheHost.csproj", "{1B9FCBF1-DFCA-4911-8A2D-345D45C77FE6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dache.Communication", "Dache.Communication\Dache.Communication.csproj", "{3F3041BD-DEEA-4C15-8AB4-305F8FD894F5}"
@@ -18,6 +18,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		SharedAssemblyInfo.cs = SharedAssemblyInfo.cs
 		TODO.txt = TODO.txt
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dache.Tests", "Dache.Tests\Dache.Tests.csproj", "{543013D6-9696-450E-89AA-89D2B1B08917}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +47,10 @@ Global
 		{6CEC0B51-BBDC-4C86-BD07-BE252F7C2C4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6CEC0B51-BBDC-4C86-BD07-BE252F7C2C4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6CEC0B51-BBDC-4C86-BD07-BE252F7C2C4E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{543013D6-9696-450E-89AA-89D2B1B08917}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{543013D6-9696-450E-89AA-89D2B1B08917}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{543013D6-9696-450E-89AA-89D2B1B08917}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{543013D6-9696-450E-89AA-89D2B1B08917}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

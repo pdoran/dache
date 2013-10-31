@@ -15,6 +15,9 @@ using Dache.Communication;
 using Dache.Core.Interfaces;
 using Dache.Core.Logging;
 using Dache.Core.Performance;
+using Castle.Windsor;
+using Castle.MicroKernel.Registration;
+using Castle.Core;
 
 namespace Dache.CacheHost
 {
@@ -91,6 +94,7 @@ namespace Dache.CacheHost
 
             try
             {
+                IWindsorContainer container = new Castle.Windsor.WindsorContainer();
                 // Initialize the mem cache container instance
                 var physicalMemoryLimitPercentage = CacheHostConfigurationSection.Settings.CacheMemoryLimitPercentage;
 
@@ -98,37 +102,14 @@ namespace Dache.CacheHost
                 cacheConfig.Add("pollingInterval", "00:00:15");
                 cacheConfig.Add("physicalMemoryLimitPercentage", physicalMemoryLimitPercentage.ToString());
 
-                var memCache = new MemCache("Dache", cacheConfig);
+                
 
                 // Initialize the client to cache service host
-                var clientToCacheServiceHost = new ServiceHost(typeof(ClientToCacheServer));
-                // Configure the client to cache service host
-                var cacheHostAddress = CacheHostConfigurationSection.Settings.Address;
-                var cacheHostPort = CacheHostConfigurationSection.Settings.Port;
-                // Build the endpoint address
-                var endpointAddress = string.Format("net.tcp://{0}:{1}/Dache/CacheHost", cacheHostAddress, cacheHostPort);
-                // Build the net tcp binding
-                var netTcpBinding = CreateNetTcpBinding();
-                // Service throttling
-                var serviceThrottling = clientToCacheServiceHost.Description.Behaviors.Find<ServiceThrottlingBehavior>();
-                if (serviceThrottling == null)
-                {
-                    serviceThrottling = new ServiceThrottlingBehavior
-                    {
-                        MaxConcurrentCalls = int.MaxValue,
-                        MaxConcurrentInstances = int.MaxValue,
-                        MaxConcurrentSessions = int.MaxValue
-                    };
-
-                    clientToCacheServiceHost.Description.Behaviors.Add(serviceThrottling);
-                }
-
-                // Configure the service endpoint
-                clientToCacheServiceHost.AddServiceEndpoint(typeof(IClientToCacheContract), netTcpBinding, endpointAddress);
-
-                // Configure the custom performance counter manager
-                var serviceHostAddress = clientToCacheServiceHost.Description.Endpoints.First().Address.Uri;
-                CustomPerformanceCounterManagerContainer.Instance = new CustomPerformanceCounterManager(string.Format("{0}_{1}", serviceHostAddress.Host, serviceHostAddress.Port), false);
+                ServiceHost clientToCacheServiceHost = SetupServiceHost();
+                Uri serviceHostAddress = clientToCacheServiceHost.Description.Endpoints.First().Address.Uri;
+                container.Install(new MemcacheInstaller(string.Format("{0}_{1}", serviceHostAddress.Host, serviceHostAddress.Port), false));
+                CustomPerformanceCounterManagerContainer.Instance = container.Resolve<CustomPerformanceCounterManager>();
+                IMemCache memCache = container.Resolve<IMemCache>(new { cacheName = "Dache", cacheConfig = cacheConfig });
 
                 // Initialize the cache host information poller
                 var cacheHostInformationPoller = new CacheHostInformationPoller(1000);
@@ -154,6 +135,35 @@ namespace Dache.CacheHost
             LoggerContainer.Instance.Info("Cache Host is starting", "Settings verified successfully");
 
             _cacheHostEngine.Start();
+        }
+
+        private ServiceHost SetupServiceHost()
+        {
+            var clientToCacheServiceHost = new ServiceHost(typeof(ClientToCacheServer));
+            // Configure the client to cache service host
+            var cacheHostAddress = CacheHostConfigurationSection.Settings.Address;
+            var cacheHostPort = CacheHostConfigurationSection.Settings.Port;
+            // Build the endpoint address
+            var endpointAddress = string.Format("net.tcp://{0}:{1}/Dache/CacheHost", cacheHostAddress, cacheHostPort);
+            // Build the net tcp binding
+            var netTcpBinding = CreateNetTcpBinding();
+            // Service throttling
+            var serviceThrottling = clientToCacheServiceHost.Description.Behaviors.Find<ServiceThrottlingBehavior>();
+            if (serviceThrottling == null)
+            {
+                serviceThrottling = new ServiceThrottlingBehavior
+                {
+                    MaxConcurrentCalls = int.MaxValue,
+                    MaxConcurrentInstances = int.MaxValue,
+                    MaxConcurrentSessions = int.MaxValue
+                };
+
+                clientToCacheServiceHost.Description.Behaviors.Add(serviceThrottling);
+            }
+
+            // Configure the service endpoint
+            clientToCacheServiceHost.AddServiceEndpoint(typeof(IClientToCacheContract), netTcpBinding, endpointAddress);
+            return clientToCacheServiceHost;
         }
 
         /// <summary>
